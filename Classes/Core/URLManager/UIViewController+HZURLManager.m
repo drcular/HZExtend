@@ -41,7 +41,7 @@ static const char kQueryDic = '\1';
         Class class = NSClassFromString(strWebCtrl);
         viewCtrl = [[class alloc] initWithURL:[NSURL URLWithString:urlstring]];
     }else { //shchema为自定义
-   
+        
         id configClass = [config objectForKey:urlstring.allPath];
         
         NSString *strclass=[configClass isKindOfClass:NSString.class]?configClass:nil;
@@ -57,7 +57,18 @@ static const char kQueryDic = '\1';
             strclass = dictclass[@"Controller"];
             class = NSClassFromString(strclass);
             if (storyBoard.isNoEmpty) {
-                viewCtrl = [[UIStoryboard storyboardWithName:storyBoard bundle:[NSBundle mainBundle]] instantiateViewControllerWithIdentifier:strclass];
+                
+                @try {
+                    
+                    viewCtrl = [[UIStoryboard storyboardWithName:storyBoard bundle:[NSBundle mainBundle]] instantiateViewControllerWithIdentifier:strclass];
+                    
+                } @catch (NSException *exception) {
+                    
+                    errorInfo = [NSString stringWithFormat:@"404 :) ,%@://%@ 在StoryBoard:%@ 并无 %@",urlstring.scheme,urlstring.host,storyBoard,strclass];
+                } @finally {
+                    
+                }
+                
             }
         }
         else {//无该URL
@@ -67,14 +78,14 @@ static const char kQueryDic = '\1';
         if(NULL != class && viewCtrl==nil) {
             viewCtrl = [[class alloc] init];
         }else { //无该控制器
-            errorInfo = [NSString stringWithFormat:@"404 :) ,%@并无注册",strclass];
+            errorInfo=errorInfo?:[NSString stringWithFormat:@"404 :) ,%@并无注册",strclass];
         }
         
-        #ifdef DEBUG  // 调试状态
+#ifdef DEBUG  // 调试状态
         viewCtrl = viewCtrl?:[self errorViewConrtollerWithInfo:errorInfo];
         
-        #else // 发布状态
-        #endif
+#else // 发布状态
+#endif
     }
     
     if (viewCtrl) {
@@ -84,11 +95,81 @@ static const char kQueryDic = '\1';
         if (queryDic.isNoEmpty) [tmpDic addEntriesFromDictionary:queryDic];
         viewCtrl.queryDic = tmpDic;
         viewCtrl.originURL = urlstring;
+        
+        NSDictionary *myPoperties = [self popertysInClass:viewCtrl.class];
+        NSArray *myPopertiesAllKeys = myPoperties.allKeys;
+        for (NSString*keyInDic in tmpDic) {
+            NSObject *value = tmpDic[keyInDic];
+            
+            if (NSNotFound!=[myPopertiesAllKeys indexOfObject:keyInDic]) {
+                
+                id popertyTypeExpectedStr= myPoperties[keyInDic];
+                id popertyTypeExpected = NSClassFromString(popertyTypeExpectedStr);
+                
+                if ([value isKindOfClass:NSClassFromString(popertyTypeExpectedStr)]) {
+                    
+                    [viewCtrl setValue:value forKeyPath:keyInDic];
+                    
+                }else{
+                    NSLog(@"class = %@ poperty[%@] type=%@,BUT para isKindOfClass:%@ ",
+                          NSStringFromClass(viewCtrl.class),
+                          keyInDic,
+                          NSStringFromClass(popertyTypeExpected),
+                          NSStringFromClass([value class]));
+                }
+                
+            }else{
+                @try {
+                    [viewCtrl setValue:value forKeyPath:keyInDic];
+                } @catch (NSException *exception) {
+                    NSLog(@"class = %@ not has poperty =%@",NSStringFromClass(viewCtrl.class),keyInDic);
+                }
+            }
+        }
         return @[viewCtrl];
     }
     return nil;
 }
-
++(NSDictionary *)popertysInClass:(Class)clz{
+    
+    NSString *className = NSStringFromClass(clz);
+    
+    const char *cClassName = [className UTF8String];
+    
+    id theClass = objc_getClass(cClassName);
+    
+    unsigned int outCount, i;
+    
+    objc_property_t *properties = class_copyPropertyList(theClass, &outCount);
+    
+    NSMutableDictionary *propertyDictionarys = [[NSMutableDictionary alloc] initWithCapacity:1];
+    
+    for (i = 0; i < outCount; i++) {
+        
+        
+        objc_property_t property = properties[i];
+        
+        
+        NSString *propertyNameString = [[NSString alloc] initWithCString:property_getName(property) encoding:NSUTF8StringEncoding];
+        
+        // 成员类型
+        NSString *attrs = @(property_getAttributes(property));
+        NSUInteger dotLoc = [attrs rangeOfString:@","].location;
+        NSString *code = nil;
+        NSUInteger loc = 3;
+        if (dotLoc == NSNotFound) { // 没有
+            code = [attrs substringFromIndex:loc];
+        } else {
+            code = [attrs substringWithRange:NSMakeRange(loc, dotLoc - loc-1)];
+        }
+        NSNumber;
+        [propertyDictionarys setObject:code?:[NSNull null] forKey:propertyNameString];
+        
+//        NSLog(@"%s code =%@ \n ", property_getName(property), code);
+        
+    }
+    return propertyDictionarys;
+}
 /**
  *  创建错误控制器
  */
