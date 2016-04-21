@@ -41,17 +41,33 @@ static const char kQueryDic = '\1';
         Class class = NSClassFromString(strWebCtrl);
         viewCtrl = [[class alloc] initWithURL:[NSURL URLWithString:urlstring]];
     }else { //shchema为自定义
-        NSString *strclass = [config objectForKey:urlstring.allPath];
+   
+        id configClass = [config objectForKey:urlstring.allPath];
+        
+        NSString *strclass=[configClass isKindOfClass:NSString.class]?configClass:nil;
+        
+        NSDictionary *dictclass=[configClass isKindOfClass:NSDictionary.class]?configClass:nil;
+        
         NSString *errorInfo = nil;
+        Class class;
         if(strclass.isNoEmpty) {
-            Class class = NSClassFromString(strclass);
-            if(NULL != class) {
-                viewCtrl = [[class alloc] init];
-            }else { //无该控制器
-                errorInfo = [NSString stringWithFormat:@"404 :) ,%@并无注册",strclass];
+            class = NSClassFromString(strclass);
+        }else if (dictclass.isNoEmpty){
+            NSString*storyBoard = dictclass[@"StoryBoard"];
+            strclass = dictclass[@"Controller"];
+            class = NSClassFromString(strclass);
+            if (storyBoard.isNoEmpty) {
+                viewCtrl = [[UIStoryboard storyboardWithName:storyBoard bundle:[NSBundle mainBundle]] instantiateViewControllerWithIdentifier:strclass];
             }
-        }else {//无该URL
+        }
+        else {//无该URL
             errorInfo = [NSString stringWithFormat:@"404 :) ,%@://%@并无注册",urlstring.scheme,urlstring.host];
+        }
+        
+        if(NULL != class && viewCtrl==nil) {
+            viewCtrl = [[class alloc] init];
+        }else { //无该控制器
+            errorInfo = [NSString stringWithFormat:@"404 :) ,%@并无注册",strclass];
         }
         
         #ifdef DEBUG  // 调试状态
