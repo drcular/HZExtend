@@ -27,5 +27,7 @@ if (condition) {\
 HZLog(@"%@",msg);\
 return returnValue;\
 }
+// 配置 URL , controller 或者 controller@storyboard
+#define HZURL_CONFIG(url,controller) url:controller
 
 

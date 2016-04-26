@@ -49,34 +49,44 @@ static const char kQueryDic = '\1';
         NSDictionary *dictclass=[configClass isKindOfClass:NSDictionary.class]?configClass:nil;
         
         NSString *errorInfo = nil;
-        Class class;
+        Class classz;
         if(strclass.isNoEmpty) {
-            class = NSClassFromString(strclass);
-        }else if (dictclass.isNoEmpty){
-            NSString*storyBoard = dictclass[@"StoryBoard"];
-            strclass = dictclass[@"Controller"];
-            class = NSClassFromString(strclass);
-            if (storyBoard.isNoEmpty) {
+            
+            NSRange atRange = [strclass rangeOfString:@"@"];
+        
+            if (NSNotFound!=atRange.location) {
                 
-                @try {
+                NSString*storyBoard = [strclass substringFromIndex :atRange.location+atRange.length];
+                strclass =  [strclass substringToIndex:atRange.location];
+                classz = NSClassFromString(strclass);
+                
+                if (storyBoard.isNoEmpty) {
+                    @try {
+                        viewCtrl = [[UIStoryboard storyboardWithName:storyBoard bundle:[NSBundle mainBundle]] instantiateViewControllerWithIdentifier:strclass];
+                        
+                    } @catch (NSException *exception) {
+                        
+                        errorInfo = [NSString stringWithFormat:@"404 :) ,%@://%@ 在StoryBoard:%@ 并无 %@",urlstring.scheme,urlstring.host,storyBoard,strclass];
+                    } @finally {
+                        
+                    }
+                }else{
                     
-                    viewCtrl = [[UIStoryboard storyboardWithName:storyBoard bundle:[NSBundle mainBundle]] instantiateViewControllerWithIdentifier:strclass];
-                    
-                } @catch (NSException *exception) {
-                    
-                    errorInfo = [NSString stringWithFormat:@"404 :) ,%@://%@ 在StoryBoard:%@ 并无 %@",urlstring.scheme,urlstring.host,storyBoard,strclass];
-                } @finally {
-                    
+                    errorInfo = [NSString stringWithFormat:@"404 :) ,%@://%@ 在StoryBoard:%@ 不存在",urlstring.scheme,urlstring.host,storyBoard];
                 }
                 
+            }else{
+        
+                classz = NSClassFromString(strclass);
             }
+         
         }
         else {//无该URL
             errorInfo = [NSString stringWithFormat:@"404 :) ,%@://%@并无注册",urlstring.scheme,urlstring.host];
         }
         
-        if(NULL != class && viewCtrl==nil) {
-            viewCtrl = [[class alloc] init];
+        if(NULL != classz && viewCtrl==nil) {
+            viewCtrl = [[classz alloc] init];
         }else { //无该控制器
             errorInfo=errorInfo?:[NSString stringWithFormat:@"404 :) ,%@并无注册",strclass];
         }
