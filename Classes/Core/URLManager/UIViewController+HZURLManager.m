@@ -53,7 +53,7 @@ static const char kQueryDic = '\1';
         if(strclass.isNoEmpty) {
             
             NSRange atRange = [strclass rangeOfString:@"@"];
-        
+            
             if (NSNotFound!=atRange.location) {
                 
                 NSString*storyBoard = [strclass substringFromIndex :atRange.location+atRange.length];
@@ -76,10 +76,10 @@ static const char kQueryDic = '\1';
                 }
                 
             }else{
-        
+                
                 classz = NSClassFromString(strclass);
             }
-         
+            
         }
         else {//无该URL
             errorInfo = [NSString stringWithFormat:@"404 :) ,%@://%@并无注册",urlstring.scheme,urlstring.host];
@@ -167,7 +167,7 @@ static const char kQueryDic = '\1';
         NSUInteger dotLoc = [attrs rangeOfString:@","].location;
         NSString *code = nil;
         NSUInteger loc = 3;
-        if (dotLoc == NSNotFound) { // 没有
+        if (dotLoc == NSNotFound||dotLoc<loc) { // 没有
             code = [attrs substringFromIndex:loc];
         } else {
             code = [attrs substringWithRange:NSMakeRange(loc, dotLoc - loc-1)];
@@ -175,7 +175,7 @@ static const char kQueryDic = '\1';
         NSNumber;
         [propertyDictionarys setObject:code?:[NSNull null] forKey:propertyNameString];
         
-//        NSLog(@"%s code =%@ \n ", property_getName(property), code);
+        //        NSLog(@"%s code =%@ \n ", property_getName(property), code);
         
     }
     return propertyDictionarys;
