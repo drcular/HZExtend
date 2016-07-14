@@ -32,7 +32,11 @@
 - (MBProgressHUD *)showBarWithText:(NSString *)text yOffset:(CGFloat)offset forKey:(NSString *)key;
 
 /********结束过程型********/
+- (void)successWithText:(NSString *)text forKey:(NSString *)key compection:(void(^)(void))compection;
 - (void)successWithText:(NSString *)text forKey:(NSString *)key;
+- (void)failWithText:(NSString *)text
+              forKey:(NSString *)key
+          compection:(void(^)(void))compection;
 - (void)failWithText:(NSString *)text forKey:(NSString *)key;
 
 /********一次性********/

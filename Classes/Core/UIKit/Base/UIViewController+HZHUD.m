@@ -9,8 +9,8 @@
 #import "UIViewController+HZHUD.h"
 #import <objc/runtime.h>
 static const CGFloat DELAY_TIME = 1;
-static NSString *const hudFailImage = @"error";
-static NSString *const HUD_SuccessImage = @"success";
+static NSString *const hudFailImage = @"ProgressHUD.bundle/error";
+static NSString *const HUD_SuccessImage = @"ProgressHUD.bundle/success";
 static const char HUD_DIC = '\0';
 
 @implementation UIViewController (HZHUD)
@@ -25,9 +25,9 @@ static const char HUD_DIC = '\0';
                        yOffset:(CGFloat)offset
 {
     if (view == nil) view = [[UIApplication sharedApplication].windows lastObject];
-
+    
     MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:view];
-    hud.userInteractionEnabled = NO;
+    hud.userInteractionEnabled = YES;
     hud.removeFromSuperViewOnHide = YES;
     hud.labelText = text;
     hud.detailsLabelText = detail;
@@ -96,6 +96,19 @@ static const char HUD_DIC = '\0';
 }
 
 #pragma mark Complete
+
+- (void)successWithText:(NSString *)text
+                 forKey:(NSString *)key
+             compection:(void(^)(void))compection
+{
+    [self successWithText:text forKey:key];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(DELAY_TIME * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        compection();
+    });
+    
+}
+
+
 //self
 - (void)successWithText:(NSString *)text forKey:(NSString *)key
 {
@@ -105,6 +118,17 @@ static const char HUD_DIC = '\0';
         hud.labelText = text;
         [hud hide:YES afterDelay:DELAY_TIME];
     }
+}
+
+- (void)failWithText:(NSString *)text
+              forKey:(NSString *)key
+          compection:(void(^)(void))compection
+{
+    [self failWithText:text forKey:key];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(DELAY_TIME * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        compection();
+    });
+    
 }
 
 - (void)failWithText:(NSString *)text forKey:(NSString *)key
@@ -253,13 +277,13 @@ static const char HUD_DIC = '\0';
 + (void)failHUD:(MBProgressHUD *)hud
 {
     hud.mode = MBProgressHUDModeCustomView;
-    hud.customView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"error"]];
+    hud.customView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:hudFailImage]];
 }
 
 + (void)successHUD:(MBProgressHUD *)hud
 {
     hud.mode = MBProgressHUDModeCustomView;
-    hud.customView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"success"]];
+    hud.customView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:HUD_SuccessImage]];
 }
 
 #pragma mark - Property
