@@ -68,6 +68,7 @@
 
 
 + (void)hideHUD:(MBProgressHUD *)hud;
+- (void)hideHUDWithKey:(NSString*)key;
 + (void)showHUD:(MBProgressHUD *)hud;
 
 @end

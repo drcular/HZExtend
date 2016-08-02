@@ -8,10 +8,10 @@
 
 #import "UIViewController+HZHUD.h"
 #import <objc/runtime.h>
-static const CGFloat DELAY_TIME = 1;
-static NSString *const hudFailImage = @"ProgressHUD.bundle/error";
+static const CGFloat DELAY_TIME         = 1;
+static NSString *const hudFailImage     = @"ProgressHUD.bundle/error";
 static NSString *const HUD_SuccessImage = @"ProgressHUD.bundle/success";
-static const char HUD_DIC = '\0';
+static const char HUD_DIC               = '\0';
 
 @implementation UIViewController (HZHUD)
 
@@ -26,12 +26,12 @@ static const char HUD_DIC = '\0';
 {
     if (view == nil) view = [[UIApplication sharedApplication].windows lastObject];
     
-    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:view];
-    hud.userInteractionEnabled = YES;
+    MBProgressHUD *hud            = [[MBProgressHUD alloc] initWithView:view];
+    hud.userInteractionEnabled    = YES;
     hud.removeFromSuperViewOnHide = YES;
-    hud.labelText = text;
-    hud.detailsLabelText = detail;
-    hud.yOffset = offset;
+    hud.labelText                 = text;
+    hud.detailsLabelText          = detail;
+    hud.yOffset                   = offset;
     [view addSubview:hud];
     
     return hud;
@@ -52,7 +52,7 @@ static const char HUD_DIC = '\0';
 - (MBProgressHUD *)showBarWithText:(NSString *)text yOffset:(CGFloat)offset forKey:(NSString *)key
 {
     MBProgressHUD *hud = [[self class]  hudWithText:text detail:nil toView:self.view yOffset:offset];
-    hud.mode = MBProgressHUDModeDeterminateHorizontalBar;
+    hud.mode           = MBProgressHUDModeDeterminateHorizontalBar;
     [[self class]  showHUD:hud];
     [self.huds setObject:hud forKey:key];
     
@@ -80,7 +80,7 @@ static const char HUD_DIC = '\0';
 + (MBProgressHUD *)showWindowBarWithText:(NSString *)text yOffset:(CGFloat)offset
 {
     MBProgressHUD *hud = [self hudWithText:text detail:nil toView:nil yOffset:offset];
-    hud.mode = MBProgressHUDModeDeterminateHorizontalBar;
+    hud.mode           = MBProgressHUDModeDeterminateHorizontalBar;
     [self showHUD:hud];
     return hud;
 }
@@ -185,9 +185,9 @@ static const char HUD_DIC = '\0';
 + (MBProgressHUD *)showMessage:(NSString *)message view:(UIView *)view yOffset:(CGFloat)offset
 {
     MBProgressHUD *hud = [self hudWithText:message detail:nil toView:view yOffset:offset];
-    hud.mode = MBProgressHUDModeText;
-    hud.margin = 10.0f;
-    hud.cornerRadius = 5.0f;
+    hud.mode           = MBProgressHUDModeText;
+    hud.margin         = 10.0f;
+    hud.cornerRadius   = 5.0f;
     [self showHUD:hud];
     [hud hide:YES afterDelay:DELAY_TIME];
     
@@ -263,7 +263,12 @@ static const char HUD_DIC = '\0';
 {
     [hud hide:YES];
 }
-
+-(void)hideHUDWithKey:(NSString*)key{
+    MBProgressHUD* hud = self.huds[key];
+    if (hud) {
+        [hud hide:YES];
+    }
+}
 + (void)showHUD:(MBProgressHUD *)hud
 {
     if (hud.superview) {
@@ -276,13 +281,13 @@ static const char HUD_DIC = '\0';
 #pragma mark - Success & Fail
 + (void)failHUD:(MBProgressHUD *)hud
 {
-    hud.mode = MBProgressHUDModeCustomView;
+    hud.mode       = MBProgressHUDModeCustomView;
     hud.customView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:hudFailImage]];
 }
 
 + (void)successHUD:(MBProgressHUD *)hud
 {
-    hud.mode = MBProgressHUDModeCustomView;
+    hud.mode       = MBProgressHUDModeCustomView;
     hud.customView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:HUD_SuccessImage]];
 }
 
